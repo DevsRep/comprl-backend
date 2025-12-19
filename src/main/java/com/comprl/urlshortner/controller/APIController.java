@@ -4,6 +4,7 @@ package com.comprl.urlshortner.controller;
 import com.comprl.urlshortner.model.*;
 import com.comprl.urlshortner.service.ExternalShorteningService;
 import com.comprl.urlshortner.service.FirestoreService;
+import com.comprl.urlshortner.service.GeminiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,9 @@ public class APIController {
 
     @Autowired
     private FirestoreService firestoreService;
+
+    @Autowired
+    private GeminiService geminiService;
 
     @PostMapping("/spoo/shorten")
     public Mono<Url> shortenUsingSpoo(@RequestBody Url urlEntity){
@@ -53,8 +57,24 @@ public class APIController {
     @PostMapping("/shorten")
     public Url shortenUsingFirestore(@RequestBody Url urlEntity) throws Exception{
 
-        return firestoreService.storeUrl(urlEntity);
+        return firestoreService.storeURL(urlEntity);
 
+    }
+
+
+    @PostMapping("/shortenai")
+    public Url shortenUsingGemini(@RequestBody Url urlEntity) throws Exception{
+
+        String slug = geminiService.getURLShortDescription(urlEntity.getLongUrl());
+
+        return firestoreService.storeURLwAI(urlEntity, slug);
+
+    }
+
+
+    @GetMapping("/urldesc")
+    public String getURLDescription(@RequestBody String url) throws Exception{
+        return geminiService.getURLShortDescription(url);
     }
 
 
