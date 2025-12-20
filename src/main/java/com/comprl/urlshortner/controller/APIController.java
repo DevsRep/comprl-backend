@@ -55,7 +55,7 @@ public class APIController {
     }
 
     @PostMapping("/shorten")
-    public Url shortenUsingFirestore(@RequestBody Url urlEntity) throws Exception{
+    public Url shortenUsingFirestore(@RequestBody Url urlEntity){
 
         return firestoreService.storeURL(urlEntity);
 
@@ -63,12 +63,18 @@ public class APIController {
 
 
     @PostMapping("/shortenai")
-    public Url shortenUsingGemini(@RequestBody Url urlEntity) throws Exception{
+    public Url shortenUsingGemini(@RequestBody Url urlEntity){
 
         String slug = geminiService.getURLShortDescription(urlEntity.getLongUrl());
 
         return firestoreService.storeURLwAI(urlEntity, slug);
 
+    }
+
+
+    @PostMapping("/shortencustom")
+    public Url shortenUsingCustom(@RequestBody Url urlEntity){
+        return firestoreService.storeURLwCustom(urlEntity, urlEntity.getExtra("customSlug"));
     }
 
 
