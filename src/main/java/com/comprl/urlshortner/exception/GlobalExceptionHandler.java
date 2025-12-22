@@ -35,4 +35,16 @@ public class GlobalExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(NullValueException.class)
+    public ResponseEntity<APIError> handleNullValueException(NullValueException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        new APIError(
+                                HttpStatus.BAD_REQUEST,
+                                ex.getMessage()
+                        )
+                );
+    }
+
 }

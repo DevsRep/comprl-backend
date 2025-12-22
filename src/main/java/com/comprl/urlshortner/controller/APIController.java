@@ -7,16 +7,18 @@ import com.comprl.urlshortner.service.FirestoreService;
 import com.comprl.urlshortner.service.GeminiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin(origins = "chrome-extension://miafpdbdgdcnnkobgmhplbepagmncplc")
 public class APIController {
 
-    private long START_TIME = System.currentTimeMillis();
+    private final long START_TIME = System.currentTimeMillis();
 
     @Autowired
     private ExternalShorteningService externalShorteningService;
@@ -79,8 +81,15 @@ public class APIController {
 
 
     @GetMapping("/urldesc")
-    public String getURLDescription(@RequestBody String url) throws Exception{
+    public String getURLDescription(@RequestBody String url) {
         return geminiService.getURLShortDescription(url);
+    }
+
+    @GetMapping("/u/{urlId}")
+    public Map<String, String > getURL(@PathVariable String urlId){
+        Map<String, String > map = new HashMap<>();
+        map.put("url", firestoreService.getUrl(urlId));
+        return map;
     }
 
 
