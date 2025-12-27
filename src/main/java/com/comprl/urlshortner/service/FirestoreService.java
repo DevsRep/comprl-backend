@@ -221,4 +221,22 @@ public class FirestoreService {
         }
     }
 
+    public  LinkDir updateLinkDir(LinkDir linkDir){
+
+        if(linkDir.getLinkDirID() == null){
+            throw new NullValueException("linkDir ID is null");
+        }else {
+            ApiFuture<WriteResult> storeRes = firestore.collection(COLLECTION_NAME_LINKDIR).document(linkDir.getLinkDirID()).set(linkDir);
+
+            try {
+                storeRes.get();
+                return linkDir;
+            } catch (Exception e) {
+                throw new FirebaseServiceException("Firestore Service Error");
+            }
+        }
+
+    }
+
+
 }

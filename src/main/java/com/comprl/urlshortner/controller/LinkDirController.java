@@ -37,5 +37,10 @@ public class LinkDirController {
         return firestoreService.getAllLinkDir(user.get("userId"));
     }
 
+    @PostMapping("/linkdir/update")
+    public LinkDir updateLinkDir(@RequestBody LinkDir linkDir){
+        return firestoreService.updateLinkDir(linkDir);
+    }
+
 
 }
