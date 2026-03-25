@@ -3,6 +3,7 @@ package com.comprl.urlshortner.controller;
 
 import com.comprl.urlshortner.model.LinkDir;
 import com.comprl.urlshortner.service.FirestoreService;
+import com.google.rpc.context.AttributeContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,12 +35,19 @@ public class LinkDirController {
     @GetMapping("/l/{linkDirId}")
     public LinkDir getLinkDir(@PathVariable String linkDirId){
 
+        return firestoreService.getLinkDirById(linkDirId);
+    }
+
+
+    @GetMapping("/linkdir/{linkDirId}/edit")
+    public LinkDir editLinkDir(@PathVariable String linkDirId){
+//        System.out.println(linkDirId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userID = authentication.getPrincipal().toString();
 
-        return firestoreService.getLinkDirById(linkDirId, userID);
-    }
+        return firestoreService.editLinkDirById(linkDirId, userID);
 
+    }
 
     @GetMapping("/linkdir/all")
     public List<LinkDir> getAllLinkDir(){
@@ -51,7 +59,11 @@ public class LinkDirController {
 
     @PostMapping("/linkdir/update")
     public LinkDir updateLinkDir(@RequestBody LinkDir linkDir){
-        return firestoreService.updateLinkDir(linkDir);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userID = authentication.getPrincipal().toString();
+
+        return firestoreService.updateLinkDir(linkDir, userID);
     }
 
 

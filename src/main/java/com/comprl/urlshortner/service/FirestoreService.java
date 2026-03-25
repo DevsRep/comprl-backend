@@ -13,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
@@ -54,6 +57,12 @@ public class FirestoreService {
     public Url storeURL(Url url) {
         FirestoreServiceRequest request = new FirestoreServiceRequest();
         request.setUrl(url.getLongUrl());
+        request.setDate(Date.from(Instant.now()));
+
+        if(url.getExtra("password") != null) {
+            request.setPassword(url.getExtra("password").toString());
+        }
+
         ApiFuture<WriteResult> storeRes;
         for (int i=0;i<5;i++){
             System.out.println(i);
@@ -85,6 +94,9 @@ public class FirestoreService {
         try {
             FirestoreServiceRequest request = new FirestoreServiceRequest();
             request.setUrl(url.getLongUrl());
+            if(url.getExtra("password") != null) {
+                request.setPassword(url.getExtra("password").toString());
+            }
 
             ApiFuture<WriteResult> storeRes = firestore.collection(COLLECTION_NAME).document(slug)
                     .set(request);
@@ -135,6 +147,10 @@ public class FirestoreService {
 
         FirestoreServiceRequest request = new FirestoreServiceRequest();
         request.setUrl(url.getLongUrl());
+        request.setDate(Date.from(Instant.now()));
+        if(url.getExtra("password") != null) {
+            request.setPassword(url.getExtra("password").toString());
+        }
 
         if(checkSlug(customSlug)){
             throw new ConflictException("Not a valid slug");
@@ -154,7 +170,7 @@ public class FirestoreService {
 
     }
 
-    public String getUrl(String urlId) {
+    public Map<String, Object> getUrl(String urlId) {
 
         ApiFuture<DocumentSnapshot> storeRes = firestore.collection(COLLECTION_NAME)
                 .document(urlId)
@@ -162,16 +178,17 @@ public class FirestoreService {
 
         try {
             DocumentSnapshot docSnap = storeRes.get();
-            return docSnap.getString("url");
+            return docSnap.getData();
         }catch (Exception e){
             throw new FirebaseServiceException("Firestore Service Error");
         }
     }
 
-    public String storeLinkDir(LinkDir linkDir) {
+    public String storeLinkDir(LinkDir linkDir, String userId) {
 
         String id = randomIDGeneratorService.generateRandomID();
         linkDir.setLinkDirID(id);
+        linkDir.setUserId(userId);
         ApiFuture<WriteResult> storeRes =  firestore.collection(COLLECTION_NAME_LINKDIR).document(id).set(linkDir);
 
         try {
@@ -216,24 +233,65 @@ public class FirestoreService {
         try{
             DocumentSnapshot snapshot = storeRes.get();
             return snapshot.toObject(LinkDir.class);
+//            if (temp.getUserId().equals(userId)){
+//                return temp;
+//            }else{
+//                throw new FirebaseServiceException("Firestore Service Error");
+//            }
         }catch (Exception e){
             throw new FirebaseServiceException("Firestore Service Error");
         }
     }
 
-    public  LinkDir updateLinkDir(LinkDir linkDir){
+
+    public LinkDir editLinkDirById(String id, String userId) {
+        ApiFuture<DocumentSnapshot> storeRes = firestore.collection(COLLECTION_NAME_LINKDIR)
+                .document(id)
+                .get();
+
+        try{
+            DocumentSnapshot snapshot = storeRes.get();
+            LinkDir temp = snapshot.toObject(LinkDir.class);
+            if (temp.getUserId().equals(userId)){
+                return temp;
+            }else{
+                throw new FirebaseServiceException("Not Authorized");
+            }
+        }catch (Exception e){
+            throw new FirebaseServiceException("Firestore Service Error");
+        }
+    }
+
+    public LinkDir updateLinkDir(LinkDir linkDir, String userId) {
 
         if(linkDir.getLinkDirID() == null){
             throw new NullValueException("linkDir ID is null");
         }else {
-            ApiFuture<WriteResult> storeRes = firestore.collection(COLLECTION_NAME_LINKDIR).document(linkDir.getLinkDirID()).set(linkDir);
+
+            ApiFuture<DocumentSnapshot> curntState = firestore.collection(COLLECTION_NAME_LINKDIR)
+                    .document(linkDir.getLinkDirID())
+                    .get();
 
             try {
-                storeRes.get();
-                return linkDir;
-            } catch (Exception e) {
+                DocumentSnapshot snapshot = curntState.get();
+                if (snapshot.toObject(LinkDir.class).getUserId().equals(userId)){
+                    ApiFuture<WriteResult> storeRes = firestore.collection(COLLECTION_NAME_LINKDIR).document(linkDir.getLinkDirID()).set(linkDir);
+
+                    try {
+                        storeRes.get();
+                        return linkDir;
+                    } catch (Exception e) {
+                        throw new FirebaseServiceException("Firestore Service Error");
+                    }
+                }else{
+                    throw new FirebaseServiceException("Not Authorized");
+                }
+            }catch (Exception e){
                 throw new FirebaseServiceException("Firestore Service Error");
             }
+
+
+
         }
 
     }
