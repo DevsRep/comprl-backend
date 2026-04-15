@@ -66,5 +66,12 @@ public class LinkDirController {
         return firestoreService.updateLinkDir(linkDir, userID);
     }
 
+    @PostMapping("/linkdir/{linkDirId}/delete")
+    public boolean deleteLinkDir(@PathVariable String linkDirId){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userID = authentication.getPrincipal().toString();
+        return firestoreService.deleteLinkDirById(linkDirId, userID);
+    }
+
 
 }

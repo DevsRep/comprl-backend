@@ -86,10 +86,10 @@ public class APIController {
     }
 
     @GetMapping("/u/{urlId}")
-    public Map<String, String > getURL(@PathVariable String urlId){
+    public Map<String, Object > getURL(@PathVariable String urlId){
         Map<String, String > map = new HashMap<>();
-        map.put("url", firestoreService.getUrl(urlId));
-        return map;
+
+        return firestoreService.getUrl(urlId);
     }
 
 

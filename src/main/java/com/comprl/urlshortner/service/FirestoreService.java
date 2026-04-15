@@ -296,5 +296,30 @@ public class FirestoreService {
 
     }
 
+    public boolean deleteLinkDirById(String id, String userId) {
+        if(id == null){
+            throw new NullValueException("id is null");
+        }else{
+
+            ApiFuture<DocumentSnapshot> curntState = firestore.collection(COLLECTION_NAME_LINKDIR)
+                    .document(id)
+                    .get();
+            try {
+                DocumentSnapshot snapshot = curntState.get();
+                if(snapshot.toObject(LinkDir.class).getUserId().equals(userId)){
+                    firestore.collection(COLLECTION_NAME_LINKDIR).document(id).delete();
+                    return true;
+                }else{
+                    throw new FirebaseServiceException("Not Authorized");
+                }
+
+            }catch (Exception e){
+                throw new FirebaseServiceException("Firestore Service Error");
+            }
+
+        }
+
+    }
+
 
 }

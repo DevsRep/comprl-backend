@@ -1,5 +1,6 @@
 package com.comprl.urlshortner.model;
 
+import java.time.Instant;
 import java.util.Date;
 
 public class FirestoreServiceRequest {
@@ -7,15 +8,15 @@ public class FirestoreServiceRequest {
     private String url;
     private String password = "";
     private int clickCount;
-    private Date date;
+    private Date date = Date.from(Instant.now());
 
     public FirestoreServiceRequest(){}
 
-    public FirestoreServiceRequest(String url, int clickCount, Date date){
+    public FirestoreServiceRequest(String url, int clickCount){
         this.url = url;
         this.password = "";
         this.clickCount = clickCount;
-        this.date = date;
+        this.date = Date.from(Instant.now());
     }
 
     public String getUrl() {
